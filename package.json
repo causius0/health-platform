@@ -1,0 +1,14 @@
+{
+  "name": "health-platform",
+  "version": "1.0.0",
+  "description": "Interactive Italian health platform for patient-doctor interaction",
+  "scripts": {
+    "dev": "./run-dev.sh",
+    "start": "./run-dev.sh",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && source venv/bin/activate && python app.py"
+  },
+  "keywords": ["health", "medical", "italian", "healthcare"],
+  "author": "FEEM Salute",
+  "license": "MIT"
+}
