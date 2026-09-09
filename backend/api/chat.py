@@ -13,6 +13,7 @@ from extensions import db, limiter
 from models import ChatMessage, ChatThread, Patient
 from api.helpers import current_user, get_patient_for, require_auth, require_role
 from services import risk_engine
+from services.chat_safety import ESCALATION_MESSAGE, detect_emergency
 from services.context import build_doctor_overview, build_patient_context
 from services.llm import get_llm_response
 
@@ -173,6 +174,38 @@ def post_message(user, thread_id):
         thread_id=thread.id, sender="patient", sender_user_id=user.id, content=content,
     ))
     db.session.flush()
+
+    # red-flag interceptor: emergencies NEVER reach the LLM. Deterministic
+    # escalation message + operator routing + immediate follow-up.
+    if thread.kind == "coach" and thread.status == "bot":
+        flag = detect_emergency(content)
+        if flag:
+            from models import FollowUp
+            from datetime import date
+            thread.status = "waiting_operator"
+            thread.subject = f"Emergenza da chat: {flag}"[:200]
+            db.session.add(ChatMessage(
+                thread_id=thread.id, sender="bot",
+                content=f"{ESCALATION_MESSAGE}\n(Rilevato: {flag})",
+            ))
+            has_pending = (
+                db.session.query(FollowUp)
+                .filter_by(patient_id=patient.id, status="pending",
+                           reason=f"Emergenza da chat: {flag}")
+                .first()
+            )
+            if not has_pending:
+                db.session.add(FollowUp(
+                    patient_id=patient.id, created_by_user_id=user.id,
+                    due_on=date.today(), reason=f"Emergenza da chat: {flag}",
+                    channel="chiamata",
+                ))
+            db.session.commit()
+            return jsonify({
+                "message": _message_payload(thread.messages[-1]),
+                "escalation": True,
+                "escalation_reason": flag,
+            }), 201
 
     if thread.status == "waiting_operator":
         # Queued for the human operator: no bot reply

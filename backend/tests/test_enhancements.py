@@ -1,5 +1,6 @@
 """Tests for the HANDOFF §3/§4/§5 additions: medications, notifications, GDPR,
 triage drafts, report, encounter documentation and audit history."""
+from datetime import date
 
 
 def test_medications_crud(doctor, worker, _seed):
@@ -114,3 +115,39 @@ def test_appointment_completion_writes_encounter(doctor, _seed, app):
     assert r.status_code == 200
     r = doctor.get(f"/api/patients/{pid}/encounters")
     assert any(e["notes"] == "Esito regolare." for e in r.get_json())
+
+
+def test_chat_red_flag_interceptor(worker, _seed, app):
+    """Emergency phrasings bypass the LLM, escalate the thread and open an
+    immediate follow-up — QA-5 regression test."""
+    pid = _seed["patient"]
+    r = worker.post("/api/chat/threads", json={})
+    assert r.status_code == 201
+    tid = r.get_json()["id"]
+
+    r = worker.post(f"/api/chat/threads/{tid}/messages",
+                    json={"content": "Ho un dolore forte al petto in questo momento e mi sento mancare"})
+    assert r.status_code == 201
+    payload = r.get_json()
+    assert payload["escalation"] is True
+    assert payload["escalation_reason"] == "dolore al petto in corso"
+    assert "118" in payload["message"]["content"]
+
+    with app.app_context():
+        from extensions import db
+        from models import ChatThread, FollowUp
+        t = db.session.get(ChatThread, tid)
+        assert t.status == "waiting_operator"
+        fu = db.session.query(FollowUp).filter_by(patient_id=pid).order_by(FollowUp.id.desc()).first()
+        assert fu.reason.startswith("Emergenza da chat")
+        assert fu.due_on == date.today()
+
+
+def test_detect_emergency_patterns():
+    from services.chat_safety import detect_emergency
+    assert detect_emergency("ho un dolore al petto forte adesso") is not None
+    assert detect_emergency("mi sento mancare") is not None
+    assert detect_emergency("non riesco a respirare bene") is not None
+    assert detect_emergency("ho la bocca storta da stamattina") is not None
+    assert detect_emergency("mi fa male la schiena") is None
+    assert detect_emergency("vorrei consigli sul cibo") is None
