@@ -1,157 +1,39 @@
-# Health Platform
+# Health Platform — note di architettura
 
-Un piattaforma sanitaria interattiva per l'interazione tra pazienti e dottori.
-Piattaforma di gestione delle malattie croniche dove i pazienti possono monitorare la loro salute e interagire con un coach sanitario AI, mentre i dottori possono monitorare i dati dei pazienti e fare domande sui pazienti tramite un assistente AI.
+Piattaforma Flask (API) + React 18 (SPA) su PostgreSQL per prevenzione e presa in
+carico dei lavoratori. Documentazione utente in `README.md`; diario delle
+iterazioni in `PROGRESS.md`.
 
-## Tecnologia
+## Principi
 
-- **Backend:** Python con Flask, SQLAlchemy, SQLite
-- **Frontend:** Vue.js 3 con Vite, Tailwind CSS, Pinia
-- **Database:** SQLite locale
-- **Autenticazione:** Token JWT con cookie HttpOnly (scadenza 24 ore)
-- **AI:** Chatbot con modello locale (placeholder per integrazione Mistral)
+1. **La verità clinica vive nel backend** (`services/risk_engine.py`,
+   `services/triage_protocols.py`): il frontend mostra, non calcola.
+2. **Soglie e fonti insieme**: ogni soglia del motore di rischio porta il
+   riferimento di letteratura visualizzato nell'interfaccia.
+3. **Cataloghi come dati**: le domande anamnestiche sono righe di database
+   (`anamnesis_questions`); i flag `risk`/`protective` delle opzioni alimentano
+   il motore via `services/anamnesis.load_answer_meta()`.
+4. **Segreti da ambiente**: nessuna chiave nel codice (vedi `backend/.env.example`).
 
-## Struttura del Progetto
+## Flussi chiave
 
-```
-health-platform/
-├── backend/
-│   ├── app.py                  # App Flask con tutti gli endpoint API
-│   ├── models.py               # Modelli SQLAlchemy (User, Patient, Doctor, LabResult, Visit, ChatSession, ChatMessage)
-│   ├── auth.py                 # Gestore autenticazione
-│   ├── chatbot.py              # Integrazione AI + costruzione contesto
-│   ├── seed_data.py            # Dati iniziali (5 pazienti + 1 dottore)
-│   ├── requirements.txt         # Dipendenze Python
-│   └── database.db             # Database SQLite (generato)
-├── frontend/
-│   ├── index.html
-│   ├── src/
-│   │   ├── main.js             # Inizializzazione app Vue
-│   │   ├── App.vue             # Componente root
-│   │   ├── style.css           # Stili globali con Tailwind
-│   │   ├── components/
-│   │   │   ├── LoginForm.vue         # Pagina login
-│   │   │   ├── PatientDashboard.vue  # Vista paziente
-│   │   │   ├── DoctorDashboard.vue   # Vista dottore
-│   │   │   ├── PatientCard.vue       # Riepilogo paziente
-│   │   │   ├── PatientDetailModal.vue # Dettagli paziente
-│   │   │   └── ChatInterface.vue      # Chat (comune entrambe)
-│   │   ├── stores/
-│   │   │   └── auth.js            # Store autenticazione (Pinia)
-│   │   └── utils/
-│   │       ├── api.js             # Client API con auth headers
-│   │       └── formatters.js      # Utilità formatting italiano
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   └── postcss.config.js
-├── CLAUDE.md                    # Questo file
-└── README.md                    # Istruzioni setup
-```
+- **Nuova misurazione** (`POST /patients/<id>/observations`) → ricalcolo rischio →
+  nuova `risk_assessments` persistita (audit).
+- **Risposta anamnestica** (`PUT /patients/<id>/anamnesis`) → refresh meta opzioni →
+  ricalcolo rischio.
+- **Triage** (`POST /triage/assessments`) → semaforo + disposition → se arancione
+  crea `appointments` (visita urgente/teleconsulto), se verde crea `follow_ups`
+  di sicurezza entro 3 giorni.
+- **Chat** (`api/chat.py`): thread `coach` (bot → waiting_operator → with_operator →
+  bot) e thread `clinical` (medico ↔ assistente su un paziente). Senza
+  `OPENROUTER_API_KEY` il bot risponde con il fallback deterministico che usa
+  comunque stratificazione e fattori reali del paziente.
 
-## Endpoint API
+## Convenzioni
 
-### Autenticazione
-- `POST /api/login` - Autentica utente, restituisce token JWT
-- `POST /api/logout` - Termina sessione e pulisce chat (privacy)
-- `GET /api/me` - Ottieni info utente corrente
-
-### Dati Paziente
-- `GET /api/patient/:id` - Profilo paziente
-- `GET /api/patient/:id/exams` - Esami laboratorio recenti (ultimi 6 mesi)
-- `GET /api/patient/:id/visits` - Storia visite
-- `GET /api/patient/:id/history` - Storia completa 6 mesi (esami + visite)
-
-### Dottore
-- `GET /api/doctor/patients` - Lista tutti i pazienti assegnati
-
-### Chatbot
-- `POST /api/chat/start` - Inizia nuova sessione chat
-- `POST /api/chat/message` - Invia messaggio, ottieni risposta AI
-- `DELETE /api/chat/session` - Termina sessione e pulisce messaggi
-
-## Credenziali Demo
-
-**Dottore:**
-- Username: `doctor`
-- Password: `FEEMsalute2026!`
-- Dr. Marco Bianchi (specializzazione in medicina interna)
-
-**Pazienti:**
-- Username: `patient1-5`
-- Password: `FEEMsalute2026!`
-- Patient 1: Mario Rossi (Diabete tipo 2, 45 anni)
-- Patient 2: Laura Bianchi (Ipertensione, 52 anni)
-- Patient 3: Giuseppe Verdi (Diabete tipo 2, 38 anni)
-- Patient 4: Anna Ferrari (Ipertensione, 48 anni)
-- Patient 5: Paolo Costa (Diabete tipo 1, 35 anni)
-
-## Privacy e Sicurezza
-
-- **Chat history:** I messaggi vengono cancellati on logout tramite query DELETE per proteggere la privacy
-- **Patient data:** Accessibile solo al dottore assegnato (per demo: tutti a Dr. Bianchi)
-- **Password hashing:** bcrypt con sale
-- **Session management:** Token JWT stateless con scadenza 24 ore
-- **SQL injection:** SQLAlchemy con query parametrizzate
-
-## TODO prima del shipping
-
-### Integrazione LLM (CRITICO)
-
-Sostituire `mock_llm_response()` in `backend/chatbot.py` con chiamate reali al modello Mistral.
-
-1. Installare Ollama: `brew install ollama` (Mac) o https://ollama.ai
-   OPPURE installare LM Studio: https://lmstudio.ai
-
-2. Scaricare modello Mistral 7B Instruct:
-   - Ollama: `ollama pull mistral`
-   - LM Studio: Download mistral-7b-instruct-gguf
-
-3. Aggiornare funzione `get_llm_response()`:
-   - Impostare variabile ambiente `LLM_ENDPOINT`:
-     * Ollama: `http://localhost:11434/api/generate`
-     * LM Studio: `http://localhost:1234/v1/chat/completions`
-   - Impostare `LLM_MODEL`: `"mistral"` (Ollama) o `"mistral-7b-instruct"` (LM Studio)
-
-4. Testare l'integrazione:
-   - Eseguire test di chat in italiano
-   - Verificare che il contesto del paziente sia incluso
-   - Verificare risposte utili e in italiano
-
-5. Security checklist:
-   - Prompt injection: Sanitizzare tutti gli input utente
-   - Rate limiting: Aggiungere rate limit per utente
-   - Context window: Troncare se >4096 token
-
-## Localizzazione
-
-- Tutta l'interfaccia utente è in italiano
-- Formato date: DD/MM/YYYY (es. 27/07/2026)
-- Formato numeri: virgola decimale (es. 1,5 invece di 1.5)
-- Termini medici: diabete, ipertensione, glicemia, HbA1c, creatinina, ecc.
-
-## Avvio
-
-### Backend
-```bash
-cd backend
-source venv/bin/activate
-python seed_data.py  # Popola database
-python app.py         # Avvia server Flask (port 5000)
-```
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev           # Avvia Vite dev server (port 5173)
-```
-
-Entrambi i server possono essere avviati con `./run.sh` (quando creato).
-
-## Note Implementative
-
-- **Pulizia chat on logout:** Implementata con DELETE query su chat_sessions e chat_messages quando l'utente fa logout
-- **Assegnazione dottore:** Hardcoded nel seed_data - tutti i pazienti assegnati a Dr. Bianchi
-- **Tipo visita:** Enum con constraint CHECK per 'controllo', 'urgenza', 'followup' in italiano
-- **Rate limiting:** Differito per demo scope, documentato come requisito produzione
+- Test: `cd backend && ./venv/bin/pytest` (database dedicato
+  `health_platform_test`, creato automaticamente).
+- Sviluppo: `./run-dev.sh` (backend :5001, frontend :5173 con proxy /api).
+- Seed: `./venv/bin/python seed_data.py` — distruttivo, ricrea i dati demo.
+- UI in italiano; design system in `frontend/src/style.css` (classi semantiche,
+  senza utility framework).
