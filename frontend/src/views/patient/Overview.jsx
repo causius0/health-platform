@@ -8,7 +8,6 @@ function NextActionIcon(kind) {
   return { misurazione: 'monitor', visita: 'stethoscope', screening: 'flask', educazione: 'book', richiamo: 'phone' }[kind] || 'clock'
 }
 
-import { patientId } from '../../lib/api' // eslint-disable-line no-unused-vars
 export default function Overview({ pid, risk, engagement, pendingActions, pathways, goals, notifications, onSymptomSubmitted }) {
   return (
     <div className="section">
