@@ -1,7 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+// GitHub Pages serves the SPA under /health-platform/; set GITHUB_PAGES_PATH
+// for that build. Dev and docker builds stay root-relative.
+const base = process.env.GITHUB_PAGES_PATH || '/'
+
 export default defineConfig({
+  base,
   plugins: [react()],
   test: {
     environment: 'jsdom',

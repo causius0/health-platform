@@ -3,11 +3,12 @@
   "short_name": "Health Platform",
   "description": "Prevenzione, monitoraggio e presa in carico per i lavoratori",
   "lang": "it",
-  "start_url": "/portal",
+  "start_url": "./portal",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f4f6f8",
   "theme_color": "#0c6e64",
   "icons": [
-    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    { "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }

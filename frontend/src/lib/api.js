@@ -1,4 +1,10 @@
-const API_BASE = '/api'
+// API endpoint for this deployment: window.__API_BASE__ is set at deploy time
+// by public/config.js (GitHub Pages builds point it at the tunnel URL),
+// VITE_API_BASE at build time; default is same-origin /api (dev, docker).
+const API_BASE =
+  (typeof window !== 'undefined' && window.__API_BASE__) ||
+  import.meta.env.VITE_API_BASE ||
+  '/api'
 
 /* Session auth: the primary path is the HttpOnly cookie set by the server, with
    the readable CSRF cookie echoed back on unsafe methods. When the environment
@@ -65,8 +71,8 @@ async function request(path, { method = 'GET', body } = {}) {
     csrfToken = ''
     fallbackToken = ''
     try { sessionStorage.removeItem('fallback_auth') } catch { /* ignore */ }
-    if (!window.location.pathname.startsWith('/login')) {
-      window.location.assign('/login')
+    if (!window.location.pathname.startsWith(`${import.meta.env.BASE_URL}login`)) {
+      window.location.assign(`${import.meta.env.BASE_URL}login`)
     }
     throw new ApiError('Sessione scaduta', 401)
   }
