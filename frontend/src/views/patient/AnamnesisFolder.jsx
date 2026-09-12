@@ -379,7 +379,7 @@ export default function AnamnesisFolder({ patientId, onRiskUpdated }) {
         onConfirm={async () => {
           await api.deleteMyAccount()
           localStorage.removeItem('user')
-          window.location.assign('/login')
+          window.location.assign(api.appUrl('login'))
         }}
         onCancel={() => setConfirmDelete(false)}
       />

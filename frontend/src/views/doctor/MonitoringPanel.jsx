@@ -46,8 +46,7 @@ export default function MonitoringPanel({ patientId }) {
   }
 
   function printLabRequest() {
-    const qs = labReqTests.join(',')
-    window.open(`/api/patients/${patientId}/lab-request?tests=${qs}`, '_blank')
+    window.open(api.labRequestUrl(patientId, labReqTests), '_blank')
   }
 
   async function addItem() {

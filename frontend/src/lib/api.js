@@ -6,6 +6,12 @@ const API_BASE =
   import.meta.env.VITE_API_BASE ||
   '/api'
 
+// App (SPA) base path, guaranteed to end with "/" — for hard redirects that
+// bypass the router (which already knows the base via BrowserRouter basename).
+const APP_BASE = `${import.meta.env.BASE_URL.replace(/\/+$/, '')}/`
+
+export const appUrl = (path) => `${APP_BASE}${path.replace(/^\//, '')}`
+
 /* Session auth: the primary path is the HttpOnly cookie set by the server, with
    the readable CSRF cookie echoed back on unsafe methods. When the environment
    drops cookies (some embedded browsers), the client falls back to a Bearer
@@ -71,8 +77,8 @@ async function request(path, { method = 'GET', body } = {}) {
     csrfToken = ''
     fallbackToken = ''
     try { sessionStorage.removeItem('fallback_auth') } catch { /* ignore */ }
-    if (!window.location.pathname.startsWith(`${import.meta.env.BASE_URL}login`)) {
-      window.location.assign(`${import.meta.env.BASE_URL}login`)
+    if (!window.location.pathname.startsWith(`${APP_BASE}login`)) {
+      window.location.assign(appUrl('login'))
     }
     throw new ApiError('Sessione scaduta', 401)
   }
@@ -111,6 +117,10 @@ export const getPatient = (id) => request(`/patients/${id}`)
 export const getObservations = (id, months = 12) => request(`/patients/${id}/observations?months=${months}`)
 export const addObservation = (id, body) => request(`/patients/${id}/observations`, { method: 'POST', body })
 export const getEncounters = (id) => request(`/patients/${id}/encounters`)
+
+/* printable lab request (server-rendered HTML, opened in a new tab) */
+export const labRequestUrl = (id, tests) =>
+  `${API_BASE}/patients/${id}/lab-request?tests=${tests.join(',')}`
 
 /* risk */
 export const getRisk = (id) => request(`/patients/${id}/risk`)
