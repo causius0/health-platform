@@ -42,15 +42,20 @@ export default function ChatPanel({ role, patientId = null, patientName = '', pa
   const [showEscalate, setShowEscalate] = useState(false)
   const [escalateSubject, setEscalateSubject] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [waiting, setWaiting] = useState(false)
   const scrollRef = useRef(null)
 
   async function openThread(id) {
     setThread(await api.getChatThread(id))
-    requestAnimationFrame(() => {
-      const el = scrollRef.current
-      if (el) el.scrollTop = el.scrollHeight
-    })
   }
+
+  // Keep the newest message in view: fires on load, on the optimistic send
+  // and when the bot reply lands.
+  const messageCount = thread?.messages?.length ?? 0
+  useEffect(() => {
+    const el = scrollRef.current
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+  }, [messageCount, waiting])
 
   async function loadThreads({ openFirst = true } = {}) {
     const list = await api.getChatThreads()
@@ -102,12 +107,23 @@ export default function ChatPanel({ role, patientId = null, patientName = '', pa
     e.preventDefault()
     const content = draft.trim()
     if (!content || !thread || busy) return
-    setBusy(true); setError('')
+    setBusy(true); setWaiting(true); setError('')
+    setDraft('')
+    // show the message immediately: the local model can take a minute
+    const temp = {
+      id: `temp-${Date.now()}`,
+      sender: role === 'patient' ? 'patient' : 'doctor',
+      content,
+      created_at: new Date().toISOString(),
+    }
+    setThread({ ...thread, messages: [...thread.messages, temp] })
     try {
       await api.sendChatMessage(thread.id, content)
-      setDraft('')
       await openThread(thread.id)
-    } catch (err) { fail(err) } finally { setBusy(false) }
+    } catch (err) {
+      setThread((cur) => cur && { ...cur, messages: cur.messages.filter((m) => m.id !== temp.id) })
+      fail(err)
+    } finally { setBusy(false); setWaiting(false) }
   }
 
   async function escalate() {
@@ -249,6 +265,12 @@ export default function ChatPanel({ role, patientId = null, patientName = '', pa
             <div className="meta">{formatDateTime(m.created_at)}</div>
           </div>
         ))}
+
+        {waiting && (
+          <div className="bubble bubble-bot typing" aria-label="L'assistente sta scrivendo…">
+            <span className="dot-t" /><span className="dot-t" /><span className="dot-t" />
+          </div>
+        )}
       </div>
 
       {error && (

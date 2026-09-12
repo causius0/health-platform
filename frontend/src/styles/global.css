@@ -60,7 +60,7 @@ button { font-family: inherit; }
 .num, .tile .value, .table td.num { font-variant-numeric: tabular-nums; }
 
 /* ---------- shell ---------- */
-.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+.app-shell { display: flex; flex-direction: column; height: 100vh; }
 
 .topbar {
   display: flex; align-items: center; gap: 16px;
@@ -338,6 +338,17 @@ button { font-family: inherit; }
 .bubble .tier-label {
   font-size: 10.5px; font-weight: 750; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--brand-strong); display: block; margin-bottom: 2px;
+}
+.typing { display: inline-flex; gap: 4px; align-items: center; padding: 11px 13px; }
+.typing .dot-t {
+  width: 6px; height: 6px; border-radius: 999px; background: var(--muted);
+  opacity: 0.4; animation: typing-b 1.2s infinite;
+}
+.typing .dot-t:nth-child(2) { animation-delay: 0.15s; }
+.typing .dot-t:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typing-b {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-3px); opacity: 1; }
 }
 
 /* ---------- modal ---------- */
