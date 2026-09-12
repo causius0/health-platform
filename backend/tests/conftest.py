@@ -37,9 +37,9 @@ class TestConfig(Config):
     JWT_SECRET_KEY = "test-secret-key-0123456789abcdef0123456789abcdef"
     JWT_ACCESS_TOKEN_EXPIRES = 86400
     CORS_ORIGINS = ["http://localhost:5173"]
-    OPENROUTER_API_KEY = ""  # force the deterministic fallback in tests
-    OPENROUTER_MODEL = "test-model"
-    OPENROUTER_URL = "http://localhost:1"
+    LLM_API_KEY = ""  # force the deterministic fallback in tests
+    LLM_MODEL = "test-model"
+    LLM_BASE_URL = "http://localhost:1"
     JSON_AS_ASCII = False
     TESTING = True
     RATELIMIT_ENABLED = False

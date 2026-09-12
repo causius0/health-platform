@@ -20,10 +20,14 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://health:${POSTGRES_PASSWORD:-health}@db:5432/health_platform
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set JWT_SECRET_KEY}
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:11434/v1/chat/completions}
+      LLM_MODEL: ${LLM_MODEL:-mistral-3b}
       DB_AUTO_CREATE: "1"
       RATELIMIT_STORAGE_URI: sqlalchemy://health:${POSTGRES_PASSWORD:-health}@db:5432/health_platform
       AUTH_ISSUE_FALLBACK_TOKEN: "0"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       db:
         condition: service_healthy

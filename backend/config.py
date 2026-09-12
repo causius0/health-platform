@@ -41,12 +41,14 @@ class Config:
     # cookies. In production set to "0": only the HttpOnly cookie is issued.
     AUTH_ISSUE_FALLBACK_TOKEN = os.getenv("AUTH_ISSUE_FALLBACK_TOKEN", "1") == "1"
 
-    # LLM chat (OpenRouter). When the key is missing the assistant falls back
+    # LLM chat: any OpenAI-compatible endpoint. Default is local inference via
+    # Ollama (no API key); a hosted provider works by setting LLM_API_KEY and
+    # LLM_BASE_URL. When the endpoint is unreachable the assistant falls back
     # to a deterministic rule-based coach, so the platform works offline.
-    OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-    OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "mistralai/ministral-3b-2512")
-    OPENROUTER_URL = os.getenv(
-        "OPENROUTER_URL", "https://openrouter.ai/api/v1/chat/completions"
+    LLM_API_KEY = os.getenv("LLM_API_KEY", "")
+    LLM_MODEL = os.getenv("LLM_MODEL", "mistral-3b")
+    LLM_BASE_URL = os.getenv(
+        "LLM_BASE_URL", "http://localhost:11434/v1/chat/completions"
     )
 
     JSON_AS_ASCII = False

@@ -1,4 +1,5 @@
-"""Chat assistant: OpenRouter LLM with a deterministic clinical fallback.
+"""Chat assistant: OpenAI-compatible LLM (local Ollama by default) with a
+deterministic clinical fallback.
 
 The API key comes from the environment (never committed). Without a key — or
 on any provider error — the assistant answers with a rule-based coach that
@@ -61,16 +62,16 @@ def get_llm_response(user_message: str, context: str, role: str, hints: dict | N
     hints = hints or {}
     system_prompt = PATIENT_SYSTEM_PROMPT if role != "doctor" else DOCTOR_SYSTEM_PROMPT
     user_message = sanitize_user_message(user_message)
-    api_key = current_app.config["OPENROUTER_API_KEY"]
+    api_key = current_app.config["LLM_API_KEY"]
     headers = {"Content-Type": "application/json", "X-Title": "Health Platform"}
     if api_key:  # hosted providers require the key; local Ollama does not
         headers["Authorization"] = f"Bearer {api_key}"
     try:
         response = requests.post(
-            current_app.config["OPENROUTER_URL"],
+            current_app.config["LLM_BASE_URL"],
             headers=headers,
             json={
-                "model": current_app.config["OPENROUTER_MODEL"],
+                "model": current_app.config["LLM_MODEL"],
                 "messages": [
                     {"role": "system", "content": f"{system_prompt}\n\n{context}"},
                     {"role": "user", "content": user_message},
