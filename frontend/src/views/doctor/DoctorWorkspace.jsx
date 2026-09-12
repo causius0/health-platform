@@ -248,7 +248,6 @@ export default function DoctorWorkspace() {
           patientId={selectedId}
           patientName={detail?.full_name || ''}
           patientRisk={detailRisk}
-          onThreadsChanged={dashboard.reload}
         />
       </aside>
 

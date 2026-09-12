@@ -88,8 +88,7 @@ def start_thread(user):
             db.session.flush()
             greeting = (
                 "Ciao! Sono il tuo coach di prevenzione. Posso spiegarti i tuoi valori, "
-                "suggerirti obiettivi settimanali e aiutarti a orientarti nel percorso. "
-                "Se preferisci parlare con un operatore, usa il pulsante 'Parla con un operatore'."
+                "suggerirti obiettivi settimanali e aiutarti a orientarti nel percorso."
             )
             db.session.add(ChatMessage(thread_id=thread.id, sender="bot", content=greeting))
         db.session.commit()
