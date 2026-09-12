@@ -116,11 +116,9 @@ export const getAnamnesis = (id) => request(`/patients/${id}/anamnesis`)
 export const putAnamnesisAnswer = (id, question_id, value) =>
   request(`/patients/${id}/anamnesis`, { method: 'PUT', body: { question_id, value } })
 export const exportAnamnesisFhir = (id) => request(`/patients/${id}/anamnesis/export`)
-export const getAnamnesisHistory = (id) => request(`/patients/${id}/anamnesis/history`)
 
 /* goals */
 export const getGoals = (id) => request(`/patients/${id}/goals`)
-export const createGoal = (id, body) => request(`/patients/${id}/goals`, { method: 'POST', body })
 export const updateGoal = (goalId, body) => request(`/goals/${goalId}`, { method: 'PATCH', body })
 export const goalCheckin = (goalId, body) => request(`/goals/${goalId}/checkin`, { method: 'POST', body })
 
@@ -149,7 +147,6 @@ export const getTriageProtocols = () => request('/triage/protocols')
 export const getTriageProtocol = (code) => request(`/triage/protocols/${code}`)
 export const submitTriage = (body) => request('/triage/assessments', { method: 'POST', body })
 export const getTriageHistory = (id) => request(`/patients/${id}/triage`)
-export const getRecentTriage = () => request('/triage/assessments')
 
 /* chat */
 export const getChatThreads = () => request('/chat/threads')
@@ -185,7 +182,6 @@ export const getMedications = (id) => request(`/patients/${id}/medications`)
 export const addMedication = (id, body) => request(`/patients/${id}/medications`, { method: 'POST', body })
 export const updateMedication = (medId, body) => request(`/medications/${medId}`, { method: 'PATCH', body })
 export const deleteMedication = (medId) => request(`/medications/${medId}`, { method: 'DELETE' })
-export const updatePatientProfile = (id, body) => request(`/patients/${id}/profile`, { method: 'PATCH', body })
 
 /* notifications */
 export const getMyNotifications = () => request('/notifications')
@@ -209,10 +205,6 @@ export const getPathwaySuggestions = (id) => request(`/patients/${id}/pathways/s
 /* education library */
 export const getEducationArticles = () => request('/education')
 export const getEducationArticle = (id) => request(`/education/${id}`)
-
-/* lab request (print document, returns HTML) */
-export const getLabRequestHtml = (id, tests) =>
-  request(`/patients/${id}/lab-request?tests=${tests.join(',')}`)
 
 /* triage drafts */
 export const saveTriageDraft = (body) => request('/triage/drafts', { method: 'POST', body })

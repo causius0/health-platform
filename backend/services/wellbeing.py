@@ -17,7 +17,6 @@ Instruments (self-compiled by the worker, viewable by both sides):
   - work      — occupational block (work ability, sickness absence,
                 presenteeism, job strain per JCQ-derived items)
 """
-import json
 from datetime import date, timedelta
 
 from models import GoalCheckIn, HealthGoal, MonitoringPlanItem, Observation, WellbeingAssessment
@@ -279,6 +278,3 @@ def compute_engagement(session, patient) -> dict:
         "instruments_completed": sorted(filled),
     }
 
-
-def answers_json(assessment: WellbeingAssessment):
-    return json.loads(assessment.answers)

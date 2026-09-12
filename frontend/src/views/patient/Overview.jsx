@@ -8,10 +8,10 @@ function NextActionIcon(kind) {
   return { misurazione: 'monitor', visita: 'stethoscope', screening: 'flask', educazione: 'book', richiamo: 'phone' }[kind] || 'clock'
 }
 
-export default function Overview({ pid, risk, engagement, pendingActions, pathways, goals, notifications, onSymptomSubmitted }) {
+export default function Overview({ pid, risk, engagement, pendingActions, pathways, goals, notifications }) {
   return (
     <div className="section">
-      <SymptomCheckInCard patientId={pid} onSubmitted={onSymptomSubmitted} />
+      <SymptomCheckInCard patientId={pid} />
 
       {/* notification strip */}
       {(notifications?.items || []).length > 0 && (

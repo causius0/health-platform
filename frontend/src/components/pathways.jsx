@@ -214,13 +214,3 @@ function BookingStepModal({ step, onClose, onBooked }) {
     </Modal>
   )
 }
-
-/** The most urgent pending action across all pathways, for hero surfaces. */
-export function nextActionsOf(pathways, limit = 3) {
-  const stateRank = { in_ritardo: 0, in_attesa: 1, programmato: 2 }
-  return pathways
-    .flatMap((p) => p.steps.map((s) => ({ ...s, pathwayName: p.name })))
-    .filter((s) => s.status !== 'completato')
-    .sort((a, b) => (stateRank[a.status] - stateRank[b.status]) || (new Date(a.due_on) - new Date(b.due_on)))
-    .slice(0, limit)
-}

@@ -1,6 +1,5 @@
 /** Doctor overview for one patient: stratification summary, pathway next
  * actions and recommended actions in one screen. */
-import { Link } from 'react-router-dom' // eslint-disable-line no-unused-vars
 import { getPatientPathways } from '../../lib/api'
 import { formatDate } from '../../lib/format'
 import { useAsync } from '../../lib/useAsync'

@@ -34,10 +34,11 @@ function TieredBubble({ content }) {
 
 export default function ChatPanel({ role, patientId = null, patientName = '', patientRisk = null, onThreadsChanged }) {
   const [mode, setMode] = useState(role === 'doctor' ? 'queue' : 'coach')
-  const [, setThreads] = useState([])
+  const [threads, setThreads] = useState([])
   const [thread, setThread] = useState(null)
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
   const [showEscalate, setShowEscalate] = useState(false)
   const [escalateSubject, setEscalateSubject] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -65,13 +66,20 @@ export default function ChatPanel({ role, patientId = null, patientName = '', pa
     }
   }
 
-  useEffect(() => { loadThreads() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  function fail(err) {
+    setError(err?.message || 'Errore di rete')
+  }
+
+  useEffect(() => {
+    loadThreads().catch(fail)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (role !== 'doctor') return
     setThread(null)
-    if (mode === 'queue') loadThreads()
-    else if (patientId) openPatientThread()
+    setError('')
+    if (mode === 'queue') loadThreads().catch(fail)
+    else if (patientId) openPatientThread().catch(fail)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, patientId])
 
@@ -82,54 +90,62 @@ export default function ChatPanel({ role, patientId = null, patientName = '', pa
   }
 
   async function startThread() {
-    setBusy(true)
+    setBusy(true); setError('')
     try {
       await api.startChatThread({})
       await loadThreads()
       onThreadsChanged?.()
-    } finally { setBusy(false) }
+    } catch (err) { fail(err) } finally { setBusy(false) }
   }
 
   async function send(e) {
     e.preventDefault()
     const content = draft.trim()
     if (!content || !thread || busy) return
-    setBusy(true)
+    setBusy(true); setError('')
     try {
       await api.sendChatMessage(thread.id, content)
       setDraft('')
       await openThread(thread.id)
-    } finally { setBusy(false) }
+    } catch (err) { fail(err) } finally { setBusy(false) }
   }
 
   async function escalate() {
-    setBusy(true)
+    setBusy(true); setError('')
     try {
       await api.escalateThread(thread.id, escalateSubject || 'Richiesta operatore')
       setShowEscalate(false)
       setEscalateSubject('')
       await Promise.all([openThread(thread.id), loadThreads({ openFirst: false })])
       onThreadsChanged?.()
-    } finally { setBusy(false) }
+    } catch (err) { fail(err) } finally { setBusy(false) }
   }
 
   async function claim() {
-    await api.claimThread(thread.id)
-    await Promise.all([openThread(thread.id), loadThreads({ openFirst: false })])
-    onThreadsChanged?.()
+    setBusy(true); setError('')
+    try {
+      await api.claimThread(thread.id)
+      await Promise.all([openThread(thread.id), loadThreads({ openFirst: false })])
+      onThreadsChanged?.()
+    } catch (err) { fail(err) } finally { setBusy(false) }
   }
 
   async function close() {
-    await api.closeThread(thread.id)
-    await Promise.all([openThread(thread.id), loadThreads({ openFirst: false })])
-    onThreadsChanged?.()
+    setBusy(true); setError('')
+    try {
+      await api.closeThread(thread.id)
+      await Promise.all([openThread(thread.id), loadThreads({ openFirst: false })])
+      onThreadsChanged?.()
+    } catch (err) { fail(err) } finally { setBusy(false) }
   }
 
   async function remove() {
-    if (!window.confirm('Cancellare definitivamente questa conversazione?')) return
-    await api.deleteThread(thread.id)
-    setThread(null)
-    await loadThreads({ openFirst: false })
+    setError('')
+    try {
+      await api.deleteThread(thread.id)
+      setThread(null)
+      await loadThreads({ openFirst: false })
+    } catch (err) { fail(err) }
   }
 
   const bubbleClass = (sender) =>
@@ -150,6 +166,8 @@ export default function ChatPanel({ role, patientId = null, patientName = '', pa
   const placeholder = role === 'patient'
     ? thread?.status === 'bot' ? 'Scrivi al coach di prevenzione…' : 'Scrivi: il messaggio arriva all’operatore…'
     : mode === 'patient' ? 'Chiedi un’analisi dei dati del paziente…' : 'Rispondi al lavoratore…'
+
+  const queueThreads = role === 'doctor' && mode === 'queue' ? threads : []
 
   return (
     <div className="chat">
@@ -185,6 +203,24 @@ export default function ChatPanel({ role, patientId = null, patientName = '', pa
         </div>
       </div>
 
+      {queueThreads.length > 1 && (
+        <div className="chat-threads" style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', maxHeight: 130, overflowY: 'auto' }}>
+          {queueThreads.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => openThread(t.id).catch(fail)}
+              className={`row-between btn btn-sm ${thread?.id === t.id ? 'btn-secondary' : 'btn-ghost'}`}
+              style={{ width: '100%', marginBottom: 4, justifyContent: 'space-between', textAlign: 'left' }}
+            >
+              <span style={{ fontWeight: thread?.id === t.id ? 600 : 400 }}>{t.patient_name || `#${t.id}`}</span>
+              <span className={`badge ${t.status === 'waiting_operator' ? 'badge-warn' : t.status === 'with_operator' ? 'badge-info' : ''}`}>
+                {t.status === 'waiting_operator' ? 'in attesa' : t.status === 'with_operator' ? 'in carico' : 'bot'}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="chat-scroll" ref={scrollRef}>
         {!thread && (
           <div className="empty">
@@ -215,6 +251,12 @@ export default function ChatPanel({ role, patientId = null, patientName = '', pa
         ))}
       </div>
 
+      {error && (
+        <div style={{ padding: '6px 12px', fontSize: 12, color: 'var(--danger, #b3261e)', borderTop: '1px solid var(--border)' }}>
+          ⚠ {error}
+        </div>
+      )}
+
       {thread && (
         <div className="chat-foot">
           <div className="row" style={{ marginBottom: 8, flexWrap: 'wrap' }}>
@@ -223,10 +265,10 @@ export default function ChatPanel({ role, patientId = null, patientName = '', pa
             )}
             <span className="grow" />
             {role === 'doctor' && thread.status === 'waiting_operator' && (
-              <button className="btn btn-primary btn-sm" onClick={claim}>Prendi in carico</button>
+              <button className="btn btn-primary btn-sm" onClick={claim} disabled={busy}>Prendi in carico</button>
             )}
             {role === 'doctor' && thread.status === 'with_operator' && (
-              <button className="btn btn-secondary btn-sm" onClick={close}>Chiudi e torna al bot</button>
+              <button className="btn btn-secondary btn-sm" onClick={close} disabled={busy}>Chiudi e torna al bot</button>
             )}
             {role === 'patient' && (
               <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(true)}>Cancella cronologia</button>

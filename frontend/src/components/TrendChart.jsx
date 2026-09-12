@@ -1,5 +1,5 @@
 /** Multi-metric trend chart over observations, with reference-range hints. */
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Chart, registerables } from 'chart.js'
 import { Line } from 'react-chartjs-2'
 import { formatDate } from '../lib/format'
@@ -47,10 +47,16 @@ export default function TrendChart({ observations = [], initialCode = '', maxLin
       .slice(0, 14)
   }, [observations])
 
-  const [selected, setSelected] = useState(() => {
-    const first = available.filter((m) => m.n >= 2).slice(0, 1).map((m) => m.code)
-    return initialCode && available.some((m) => m.code === initialCode) ? [initialCode] : first
-  })
+  // Observations arrive asynchronously: (re)select the first metric once
+  // anything is chartable, unless the user already picked one.
+  const [selected, setSelected] = useState(initialCode ? [initialCode] : [])
+  useEffect(() => {
+    if (selected.length) return
+    const first = initialCode && available.some((m) => m.code === initialCode)
+      ? [initialCode]
+      : available.slice(0, 1).map((m) => m.code)
+    if (first.length) setSelected(first)
+  }, [available]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggle(code) {
     setSelected((cur) => {

@@ -13,7 +13,6 @@ from models import (
     HealthGoal,
     MonitoringPlanItem,
     Patient,
-    User,
     METRIC_CODES,
 )
 from api.helpers import BadRequest, get_patient_for, parse_date, parse_datetime, require_auth, require_role

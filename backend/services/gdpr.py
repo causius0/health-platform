@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from models import (
     AnamnesisAnswer, AnamnesisQuestion, Appointment, CarePathway, ChatThread,
-    Encounter, FollowUp, GoalCheckIn, HealthGoal, MonitoringPlanItem,
+    Encounter, FollowUp, HealthGoal, MonitoringPlanItem,
     Observation, Patient, RiskAssessment, TriageAssessment,
     WellbeingAssessment,
 )

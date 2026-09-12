@@ -52,10 +52,6 @@ export function Modal({ title, onClose, children, footer, wide }) {
   )
 }
 
-export function Skeleton({ h = 14, style }) {
-  return <div className="skeleton" style={{ height: h, ...style }} />
-}
-
 export function Loading({ label = 'Caricamento…' }) {
   return (
     <div className="row" style={{ justifyContent: 'center', padding: 36, gap: 10, color: 'var(--muted)' }}>

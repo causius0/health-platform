@@ -28,15 +28,15 @@ def article(user, article_id):
 # Printable lab request (invio richieste di laboratorio)
 # ---------------------------------------------------------------------------
 LAB_TESTS = [
-    ("hba1c", "Emoglobina glicata (HbA1c)", "sangue"),
-    ("glucose_fasting", "Glicemia a digiuno", "sangue"),
-    ("ldl", "Colesterolo LDL", "sangue"),
-    ("hdl", "Colesterolo HDL", "sangue"),
-    ("total_cholesterol", "Colesterolo totale", "sangue"),
-    ("triglycerides", "Trigliceridi", "sangue"),
-    ("creatinine", "Creatininemia", "sangue"),
-    ("egfr", "Filtrato glomerulare (eGFR)", "sangue"),
-    ("microalbuminuria", "Microalbuminuria (urine Mine)", "urine"),
+    ("hba1c", "Emoglobina glicata (HbA1c)"),
+    ("glucose_fasting", "Glicemia a digiuno"),
+    ("ldl", "Colesterolo LDL"),
+    ("hdl", "Colesterolo HDL"),
+    ("total_cholesterol", "Colesterolo totale"),
+    ("triglycerides", "Trigliceridi"),
+    ("creatinine", "Creatininemia"),
+    ("egfr", "Filtrato glomerulare (eGFR)"),
+    ("microalbuminuria", "Microalbuminuria (urine Mine)"),
 ]
 
 
@@ -53,7 +53,7 @@ def lab_request(user, patient_id):
         return jsonify({"error": "Paziente non trovato"}), 404
 
     codes = [c for c in (req.args.get("tests", "").split(",")) if c]
-    tests = [(c, label) for c, label, _matrix in LAB_TESTS if c in codes]
+    tests = [(c, label) for c, label in LAB_TESTS if c in codes]
     if not tests:
         return jsonify({"error": "Nessuna analisi selezionata"}), 400
 
@@ -89,7 +89,7 @@ def lab_request(user, patient_id):
 <div class="patient"><b>{patient.full_name}</b> — {patient.birth_date.strftime('%d/%m/%Y') if patient.birth_date else '—'}<br>
 {patient.employer or ''}{(' · ' + patient.job_title) if patient.job_title else ''}<br>
 Diagnosi: {patient.primary_diagnosis or '—'}</div>
-<table><thead><tr><th>#</th><th>Analisi richiesta</th><th>Materiale</th></tr></thead>
+<table><thead><tr><th>#</th><th>Analisi richiesta</th><th>Valori di riferimento</th></tr></thead>
 <tbody>{rows}</tbody></table>
 <p class="note">Presentarsi a digiuno da almeno 8 ore per gli esami su sangue. Portare con sé
 la tessera sanitaria e questa richiesta.</p>

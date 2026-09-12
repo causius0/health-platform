@@ -11,7 +11,7 @@ from flask import Blueprint, jsonify, request
 
 from extensions import db, limiter
 from models import ChatMessage, ChatThread, Patient
-from api.helpers import current_user, get_patient_for, require_auth, require_role
+from api.helpers import require_auth, require_role
 from services import risk_engine
 from services.chat_safety import ESCALATION_MESSAGE, detect_emergency
 from services.context import build_doctor_overview, build_patient_context

@@ -9,6 +9,6 @@
     "dev:backend": "cd backend && source venv/bin/activate && python app.py"
   },
   "keywords": ["health", "medical", "italian", "healthcare"],
-  "author": "FEEM Salute",
+  "author": "",
   "license": "MIT"
 }

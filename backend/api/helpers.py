@@ -5,7 +5,7 @@ from flask import jsonify
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 
 from extensions import db
-from models import Doctor, Patient, User
+from models import Patient, User
 
 
 def current_user() -> User | None:
@@ -58,10 +58,6 @@ def user_payload(user: User) -> dict:
         p = user.patient_profile
         payload.update({"patient_id": p.id, "full_name": p.full_name})
     return payload
-
-
-def json_list(rows):
-    return jsonify(rows) if not isinstance(rows, tuple) else rows
 
 
 def parse_date(value, field="data"):

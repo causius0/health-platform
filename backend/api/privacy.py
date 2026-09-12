@@ -4,7 +4,6 @@ import json
 from flask import Blueprint, Response, jsonify
 
 from extensions import db
-from models import Patient
 from api.helpers import get_patient_for, require_auth
 from services import gdpr, notifications
 

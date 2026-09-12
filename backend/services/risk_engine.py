@@ -25,9 +25,7 @@ from models import (
     AnamnesisAnswer,
     AnamnesisQuestion,
     Observation,
-    Patient,
 )
-import json
 
 MODEL_VERSION = "motore-rischio 2.0"
 

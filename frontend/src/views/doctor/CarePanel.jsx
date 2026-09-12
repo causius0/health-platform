@@ -18,7 +18,6 @@ export default function CarePanel({ patientId, onChange }) {
   const [fu, setFu] = useState({ reason: '', due_on: '', channel: 'chiamata' })
   const [showAppt, setShowAppt] = useState(false)
   const [outcomeFor, setOutcomeFor] = useState(null)
-  const [outcomeText, setOutcomeText] = useState('')
   const fuForId = outcomeFor?.id ?? null
   const [completeFor, setCompleteFor] = useState(null)
   const [appt, setAppt] = useState({ kind: 'visita_ambulatoriale', reason: '', priority: 'routine', scheduled_at: '', location: '' })
@@ -32,11 +31,9 @@ export default function CarePanel({ patientId, onChange }) {
     onChange?.()
   }
 
-  async function completeFu() {
-    const outcome = outcomeText
+  async function completeFu(text) {
     setOutcomeFor(null)
-    setOutcomeText('')
-    await api.updateFollowUp(fuForId, { status: 'done', outcome })
+    await api.updateFollowUp(fuForId, { status: 'done', outcome: text || '' })
     await followUps.reload()
     onChange?.()
   }
@@ -205,7 +202,7 @@ export default function CarePanel({ patientId, onChange }) {
                           {a.status === 'proposto' && (
                             <button className="btn btn-primary btn-sm" onClick={() => setApptStatus(a, 'confermato')}>Conferma</button>
                           )}
-                          <button className="btn btn-secondary btn-sm" onClick={() => setApptStatus(a, 'completato')}>Completata</button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => setCompleteFor(a)}>Completata</button>
                         </div>
                       </div>
                     </div>
@@ -328,7 +325,7 @@ export default function CarePanel({ patientId, onChange }) {
         message="La nota clinica viene registrata come incontro nel diario del lavoratore e, per le tappe di percorso, chiude la tappa associata."
         busy={false}
         onConfirm={async (note) => {
-          await api.updateAppointment(completeFor.id, { status: 'completato', clinical_note: note })
+          await api.updateAppointment(completeFor.id, { status: 'completato', clinical_note: note, outcome: note })
           setCompleteFor(null)
           await appts.reload()
           onChange?.()
@@ -342,7 +339,7 @@ export default function CarePanel({ patientId, onChange }) {
         message="Registra l'esito del contatto: resterà nello storico del lavoratore."
         busy={false}
         onConfirm={completeFu}
-        onCancel={() => { setOutcomeFor(null); setOutcomeText('') }}
+        onCancel={() => setOutcomeFor(null)}
       />
     </div>
   )

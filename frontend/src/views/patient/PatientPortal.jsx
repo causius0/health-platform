@@ -6,7 +6,6 @@ import Icon from '../../components/Icon'
 import { Loading, RiskBadge } from '../../components/ui'
 import { getEngagement, getGoals, getMyNotifications, getPatient, getPatientPathways, getRisk } from '../../lib/api'
 import { useAsync } from '../../lib/useAsync'
-import { RISK_LEVEL_LABEL } from '../../lib/format'
 import AnamnesisFolder from './AnamnesisFolder'
 import Education from './Education'
 import Appointments from './Appointments'
@@ -102,7 +101,6 @@ export default function PatientPortal() {
               profile={p} risk={riskData} engagement={engagement.data}
               pendingActions={pendingActions} pathways={pathways.data || []}
               goals={goals.data || []} notifications={notifications.data}
-              riskCount={riskData?.risk_count} riskLabel={RISK_LEVEL_LABEL[riskData?.level]}
             />
           } />
           <Route path="percorsi" element={

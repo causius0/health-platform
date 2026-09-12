@@ -49,10 +49,6 @@ class Config:
         "OPENROUTER_URL", "https://openrouter.ai/api/v1/chat/completions"
     )
 
-    # Where the risk engine looks for the latest observation of each metric
-    # when deciding if a factor is still "current".
-    OBSERVATION_RECENCY_DAYS = int(os.getenv("OBSERVATION_RECENCY_DAYS", "180"))
-
     JSON_AS_ASCII = False
     # Local models can be slow on CPU: configurable per-request timeout.
     LLM_TIMEOUT = int(os.getenv("LLM_TIMEOUT", "90"))

@@ -1,7 +1,6 @@
 """Doctor workspace bootstrap: one call for the whole console."""
 import json
-from datetime import date as date_type, datetime, timedelta, timezone
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 
 from flask import Blueprint, jsonify
 
@@ -14,7 +13,6 @@ from models import (
     Patient,
     SymptomCheckIn,
     TriageAssessment,
-    User,
 )
 from api.helpers import require_role
 from services import notifications, risk_engine
@@ -27,7 +25,6 @@ bp = Blueprint("doctor", __name__, url_prefix="/api/doctor")
 def report(user):
     """Management view: pathway adherence, engagement and risk by employer."""
     from models import WellbeingAssessment
-    from datetime import date as date_type
     from services.pathways import step_state
 
     patients = db.session.query(Patient).all()
@@ -154,7 +151,7 @@ def dashboard(user):
     recent_checkins = (
         db.session.query(SymptomCheckIn, Patient)
         .join(Patient, SymptomCheckIn.patient_id == Patient.id)
-        .filter(SymptomCheckIn.taken_on >= date_type.today() - timedelta(days=7))
+        .filter(SymptomCheckIn.taken_on >= date.today() - timedelta(days=7))
         .order_by(SymptomCheckIn.created_at.desc())
         .limit(10)
         .all()

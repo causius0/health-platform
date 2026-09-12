@@ -5,8 +5,8 @@ from datetime import date
 from flask import Blueprint, jsonify, request
 
 from extensions import db
-from models import Patient, WellbeingAssessment
-from api.helpers import get_patient_for, parse_date, require_auth, require_role
+from models import WellbeingAssessment
+from api.helpers import get_patient_for, parse_date, require_auth
 from services import wellbeing
 
 bp = Blueprint("wellbeing", __name__, url_prefix="/api")

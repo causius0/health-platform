@@ -108,16 +108,6 @@ with app.app_context():
 # ---------------------------------------------------------------------------
 PASSWORD = "HealthPlatform.Demo2026!"
 
-STAFF = [
-    {
-        "username": "doctor", "role": "doctor",
-        "first_name": "Marco", "last_name": "Bianchi",
-        "specialization": "Medicina del lavoro",
-        "phone": "+39 051 5550101",
-    },
-    # NOTE: patient personas are defined below
-]
-
 PEOPLE = [
     {
         "username": "patient1", "first_name": "Mario", "last_name": "Rossi",

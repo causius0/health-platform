@@ -7,8 +7,6 @@ clinician assistant needs, nothing more.
 """
 
 from models import (
-    AnamnesisAnswer,
-    AnamnesisQuestion,
     Appointment,
     Encounter,
     Observation,

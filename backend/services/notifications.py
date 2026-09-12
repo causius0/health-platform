@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta, timezone
 def for_patient(session, patient) -> list:
     """Worker-facing notifications, most urgent first."""
     from models import (
-        Appointment, CarePathway, CarePathwayStep, FollowUp,
+        Appointment, CarePathway, FollowUp,
     )
     from services.pathways import step_state
 

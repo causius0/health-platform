@@ -57,7 +57,7 @@ function RequireRole({ role, children }) {
 function FatalBoundary({ children }) {
   // Uncaught render errors become visible instead of a blank screen.
   useEffect(() => {
-    function show(message) {
+    const show = (message) => {
       let el = document.getElementById('fatal-error')
       if (!el) {
         el = document.createElement('div')
@@ -69,11 +69,13 @@ function FatalBoundary({ children }) {
       }
       el.textContent = message
     }
-    window.addEventListener('unhandledrejection', (e) => show(e.reason?.stack || String(e.reason)))
-    window.addEventListener('error', (e) => show(e.error?.stack || e.message))
+    const onRejection = (e) => show(e.reason?.stack || String(e.reason))
+    const onError = (e) => show(e.error?.stack || e.message)
+    window.addEventListener('unhandledrejection', onRejection)
+    window.addEventListener('error', onError)
     return () => {
-      window.removeEventListener('unhandledrejection', () => {})
-      window.removeEventListener('error', () => {})
+      window.removeEventListener('unhandledrejection', onRejection)
+      window.removeEventListener('error', onError)
     }
   }, [])
   return children

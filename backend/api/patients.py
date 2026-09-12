@@ -2,7 +2,7 @@
 import json
 from datetime import date, datetime, timedelta, timezone
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, jsonify, request
 
 from extensions import db
 from models import (
@@ -13,10 +13,9 @@ from models import (
     Patient,
     PatientMedication,
     RiskAssessment,
-    User,
     METRIC_CODES,
 )
-from api.helpers import BadRequest, get_patient_for, parse_date, require_role, require_auth
+from api.helpers import get_patient_for, parse_date, require_auth, require_role
 from services import risk_engine
 
 bp = Blueprint("patients", __name__, url_prefix="/api")

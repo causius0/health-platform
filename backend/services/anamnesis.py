@@ -9,7 +9,6 @@ criterion.
 """
 import json
 
-from extensions import db
 from models import AnamnesisAnswer, AnamnesisQuestion, Patient
 
 # section: stile_di_vita | lavoro | storia_clinica
