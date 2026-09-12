@@ -3,12 +3,17 @@ import { formatDateTime, GOAL_AREA_LABEL } from '../../lib/format'
 import Icon from '../../components/Icon'
 import { Badge, Progress, RiskBadge, StatTile } from '../../components/ui'
 import SymptomCheckInCard from '../../components/SymptomCheckInCard'
+import TrendChart from '../../components/TrendChart'
+import { useAsync } from '../../lib/useAsync'
+import * as api from '../../lib/api'
 
 function NextActionIcon(kind) {
   return { misurazione: 'monitor', visita: 'stethoscope', screening: 'flask', educazione: 'book', richiamo: 'phone' }[kind] || 'clock'
 }
 
 export default function Overview({ pid, risk, engagement, pendingActions, pathways, goals, notifications }) {
+  const observations = useAsync(() => api.getObservations(pid, 12), [pid])
+
   return (
     <div className="section">
       <SymptomCheckInCard patientId={pid} />
@@ -63,6 +68,19 @@ export default function Overview({ pid, risk, engagement, pendingActions, pathwa
               <span key={i} className="chip"><Icon name="target" size={12} /> {r}</span>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* labs progression */}
+      <div className="card">
+        <div className="card-head">
+          <h3>Andamento dei tuoi valori</h3>
+          <Link to="/portal/monitoraggio" className="btn btn-ghost btn-sm">
+            Registra una misura <Icon name="arrowRight" size={13} />
+          </Link>
+        </div>
+        <div className="card-body">
+          <TrendChart observations={observations.data || []} />
         </div>
       </div>
 

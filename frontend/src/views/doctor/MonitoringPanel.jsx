@@ -4,6 +4,7 @@ import * as api from '../../lib/api'
 import { formatDate } from '../../lib/format'
 import { Badge, Field, Modal } from '../../components/ui'
 import TrendChart from '../../components/TrendChart'
+import DeltaLine from '../../components/DeltaLine'
 import { useAsync } from '../../lib/useAsync'
 
 const METRIC_OPTIONS = [
@@ -113,6 +114,7 @@ export default function MonitoringPanel({ patientId }) {
                         <>
                           <strong>{item.last_value}</strong> <span className="muted">{item.unit}</span>
                           <div style={{ fontSize: 10.5, color: 'var(--faint)' }}>{formatDate(item.last_taken_on)}</div>
+                          <DeltaLine observations={observations.data} code={item.code} />
                         </>
                       ) : '—'}
                     </td>

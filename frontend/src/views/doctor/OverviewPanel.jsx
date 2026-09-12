@@ -1,6 +1,7 @@
 /** Doctor overview for one patient: stratification summary, pathway next
  * actions and recommended actions in one screen. */
-import { getPatientPathways } from '../../lib/api'
+import { getPatientPathways, getObservations } from '../../lib/api'
+import TrendChart from '../../components/TrendChart'
 import { formatDate } from '../../lib/format'
 import { useAsync } from '../../lib/useAsync'
 import Icon from '../../components/Icon'
@@ -11,6 +12,7 @@ const STATE_RANK = { in_ritardo: 0, in_attesa: 1, programmato: 2 }
 
 export default function OverviewPanel({ patientId, risk, onOpenTab }) {
   const pathways = useAsync(() => getPatientPathways(patientId), [patientId])
+  const observations = useAsync(() => getObservations(patientId, 12), [patientId])
 
   const nextActions = (pathways.data || [])
     .flatMap((p) => p.steps.map((s) => ({ ...s, pathwayName: p.name, pathwayId: p.id })))
@@ -48,6 +50,18 @@ export default function OverviewPanel({ patientId, risk, onOpenTab }) {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <h3>Andamento misurazioni</h3>
+          <button className="btn btn-ghost btn-sm" onClick={() => onOpenTab('monitoraggio')}>
+            Registra esame <Icon name="arrowRight" size={13} />
+          </button>
+        </div>
+        <div className="card-body">
+          <TrendChart observations={observations.data || []} />
         </div>
       </div>
 

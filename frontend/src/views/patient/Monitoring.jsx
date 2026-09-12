@@ -4,6 +4,7 @@ import * as api from '../../lib/api'
 import { formatDate } from '../../lib/format'
 import { Badge, Empty, Field, Modal } from '../../components/ui'
 import TrendChart from '../../components/TrendChart'
+import DeltaLine from '../../components/DeltaLine'
 import { useAsync } from '../../lib/useAsync'
 
 const EXTRA_METRICS = [
@@ -129,6 +130,7 @@ export default function Monitoring({ patientId, onRiskUpdated }) {
                         </div>
                       )}
                       {item.last_taken_on && <div style={{ fontSize: 10.5, color: 'var(--faint)' }}>{formatDate(item.last_taken_on)}</div>}
+                      <DeltaLine observations={observations.data} code={item.code} />
                     </div>
                     <button className="btn btn-primary btn-sm" onClick={() => openRecord(item.code)}>Registra</button>
                   </div>

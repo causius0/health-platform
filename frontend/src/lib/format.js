@@ -65,3 +65,18 @@ export function parseTiered(content) {
   }
   return tiers
 }
+
+/** Latest vs previous value of a metric, for progression hints in tables. */
+export function metricDelta(observations, code) {
+  const rows = (observations || [])
+    .filter((o) => o.code === code && o.value !== null && o.value !== undefined)
+    .slice()
+    .sort((a, b) => new Date(b.taken_on) - new Date(a.taken_on))
+  if (rows.length < 2) return null
+  const [latest, prev] = rows
+  const pct = prev.value
+    ? Math.round(((latest.value - prev.value) / prev.value) * 1000) / 10
+    : null
+  return { latest: latest.value, prev: prev.value, pct }
+}
+
