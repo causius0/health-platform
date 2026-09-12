@@ -688,22 +688,6 @@ with app.app_context():
     step_recall.followup_id = fu_pending.id
     step_recall.status = "programmato"
 
-    # --- chat: coach thread for patient3, escalated, waiting operator --
-    thread = ChatThread(patient_id=p3.id, kind="coach", status="waiting_operator",
-                        subject="Glicemie alte e mal di pancia: cosa fare?")
-    db.session.add(thread)
-    db.session.flush()
-    chat_lines = [
-        ("bot", "Ciao Giuseppe! Sono il tuo coach di prevenzione. Posso spiegarti i tuoi valori, suggerirti obiettivi settimanali e aiutarti a orientarti nel percorso."),
-        ("patient", "Ciao, da due giorni le glicemie sono alte (180-200) e ho mal di pancia. Preoccupa?"),
-        ("bot", "INFORMAZIONE GENERALE: valori tra 180 e 200 mg/dL sono sopra l'obiettivo e con dolore addominale vanno riferiti subito.\nCONSIGLIO PREVENTIVO PERSONALIZZATO: questa settimana misura la glicemia a digiuno e 2 ore dopo cena, ogni giorno.\nINDICAZIONE CLINICA: con dolore addominale persistente contatta il medico entro oggi."),
-        ("patient", "Ok, ma preferirei parlare con qualcuno."),
-    ]
-    base_time = datetime.now(timezone.utc) - timedelta(hours=5)
-    for i, (sender, content) in enumerate(chat_lines):
-        db.session.add(ChatMessage(thread_id=thread.id, sender=sender, content=content,
-                                   created_at=base_time + timedelta(minutes=i * 7)))
-
     # --- persisted risk assessments (audit baseline) -------------------
     for patient, spec in patients:
         evaluation = risk_engine.evaluate_patient(db.session, patient)
