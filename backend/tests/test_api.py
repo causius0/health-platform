@@ -13,6 +13,12 @@ def test_login_rejects_bad_credentials(client):
     assert r.status_code == 401
 
 
+def test_login_rejects_overlong_password(client):
+    # bcrypt raises beyond 72 bytes; the API must answer 401, not 500
+    r = client.post("/api/login", json={"username": "doctor", "password": "x" * 300})
+    assert r.status_code == 401
+
+
 def test_me_requires_token(client):
     assert client.get("/api/me").status_code == 401
 

@@ -27,7 +27,12 @@ def login():
         return jsonify({"error": "Username e password obbligatori"}), 400
 
     user = db.session.query(User).filter_by(username=username).first()
-    if not user or not bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
+    # bcrypt only hashes the first 72 bytes and pyca-bcrypt raises beyond that:
+    # an over-long password can never match a stored hash, so reject it as any
+    # other wrong credential instead of a 500.
+    if not user or len(password) > 72 or not bcrypt.checkpw(
+        password.encode("utf-8"), user.password_hash.encode("utf-8")
+    ):
         return jsonify({"error": "Credenziali non valide"}), 401
 
     user.last_login_at = datetime.now(timezone.utc)
