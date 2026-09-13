@@ -58,3 +58,6 @@ Thumbs.db
 # Claude
 .claude/
 .gstack/
+
+# Machine-local operations (tunnel wrapper)
+.local/
